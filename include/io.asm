@@ -1,5 +1,11 @@
 global print
+global STDIN, STDOUT, STDERR
 extern strlen
+
+section .data
+    STDIN  equ 0
+    STDOUT equ 1
+    STDERR equ 2
 
 section .text
 ; void print(qword fd, byte *s)
