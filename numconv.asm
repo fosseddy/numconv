@@ -1,20 +1,19 @@
 global _start
 extern print, STDERR
 extern exit
+extern atoi
 
 section .data
-    LF   equ 10
+    LF equ 10
     NULL equ 0
 
-    usage_msg db "Usage: numconv [OPTION] [VALUE]", LF
-              db "Converts VALUE specified by OPTION into binary, decimal, "
-              db "hex, octal", LF
-              db LF
-              db "OPTION", LF
-              db "  -b binary", LF
-              db "  -d decimal", LF
-              db "  -h hex", LF
-              db "  -o octal", LF, NULL
+    value dq 0
+
+    err_num_msg db "VALUE is not a number", LF, NULL
+    err_argc_msg db "Not enough arguments", LF, NULL
+
+    usage_msg db "Usage: numconv [VALUE]", LF
+              db "Converts decimal VALUE into binary, decimal, hex, octal", LF
 
 section .bss
     argc resq 1
@@ -22,18 +21,43 @@ section .bss
 
 section .text
 _start:
-    pop qword [argc]
+    pop rax
+    dec rax
+    cmp rax, 1
+    jl .err_argc
+
+    mov [argc], rax
+    add rsp, 8
     pop qword [argv]
 
-    cmp qword [argc], 2
-    jl .args_error
+    mov rdi, value
+    mov rsi, [argv]
+    call atoi
+
+    cmp rax, 1
+    jne .err_num
 
     jmp .exit_success
 
-.args_error:
+.err_argc:
+    mov rdi, STDERR
+    mov rsi, err_argc_msg
+    call print
+    jmp .print_usage
+
+.err_num:
+    mov rdi, STDERR
+    mov rsi, err_num_msg
+    call print
+    jmp .print_usage
+
+.print_usage:
     mov rdi, STDERR
     mov rsi, usage_msg
     call print
+    jmp .exit_failure
+
+.exit_failure:
     mov rdi, 1
     call exit
 
