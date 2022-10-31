@@ -19,6 +19,7 @@ atoi:
     mov qword [rdi], 0
     mov rcx, 0
     mov r8, 0
+    mov r9, 0
 
     cmp byte [rsi], "+"
     jne .no_plus_sign
