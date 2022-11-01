@@ -14,6 +14,11 @@ section .data
 
     value dq 0
 
+    decimal_msg db "decimal: ", NULL
+    hex_msg     db "    hex: ", NULL
+    binary_msg  db " binary: ", NULL
+    octal_msg   db "  octal: ", NULL
+
     err_num_msg db "VALUE is not a number", LF, NULL
     err_argc_msg db "Not enough arguments", LF, NULL
 
@@ -24,8 +29,9 @@ section .bss
     argc resq 1
     argv resq 1
 
-    binary_str resb 66
-    octal_str resb 24
+    binary resb 66
+    octal resb 24
+    hex resb 18
 
 section .text
 _start:
@@ -45,23 +51,41 @@ _start:
     cmp rax, 1
     jne .err_num
 
-    mov rdi, binary_str
+    mov rdi, binary
     mov rsi, [value]
-    call int64_to_binary
+    mov rdx, 2
+    call fmt_int64
+
+    mov rdi, octal
+    mov rsi, [value]
+    mov rdx, 8
+    call fmt_int64
+
+    mov rdi, hex
+    mov rsi, [value]
+    mov rdx, 16
+    call fmt_int64
 
     mov rdi, STDOUT
-    mov rsi, binary_str
+    mov rsi, decimal_msg
+    call print
+    mov rsi, [argv]
     call println
 
-    mov rdi, octal_str
-    mov rsi, [value]
-    call int64_to_octal
-
-    mov rdi, STDOUT
-    mov rsi, octal_str
+    mov rsi, hex_msg
+    call print
+    mov rsi, hex
     call println
 
-    ; convert to hex
+    mov rsi, binary_msg
+    call print
+    mov rsi, binary
+    call println
+
+    mov rsi, octal_msg
+    call print
+    mov rsi, octal
+    call println
 
     jmp .exit_success
 
@@ -91,11 +115,11 @@ _start:
     mov rdi, 0
     call exit
 
-; void int64_to_binary(byte *dest, qword num)
-int64_to_binary:
+; fmt_int64(byte *dest, qword num, qword base)
+fmt_int64:
     mov rax, rsi
     mov rcx, 0
-    mov r8, 2
+    mov r8, rdx
     mov r9, FALSE
 
     cmp rax, 0
@@ -107,42 +131,19 @@ int64_to_binary:
     cqo
     idiv r8
 
+    cmp r8, 16
+    jne .skip_hex
+
+    cmp dl, 10
+    jl .skip_hex
+
+    add dl, "a"-10
+    jmp .put_char
+
+.skip_hex:
     add dl, "0"
-    mov [rdi+rcx], dl
 
-    inc rcx
-
-    cmp rax, 0
-    jne .loop
-
-    cmp r9, TRUE
-    jne .not_negative
-
-    mov byte [rdi+rcx], "-"
-    inc rcx
-.not_negative:
-    mov byte [rdi+rcx], NULL
-    call strrev
-
-    ret
-
-; void int64_to_octal(byte *dest, qword num)
-int64_to_octal:
-    mov rax, rsi
-    mov rcx, 0
-    mov r8, 8
-    mov r9, FALSE
-
-    cmp rax, 0
-    jge .loop
-
-    neg rax
-    mov r9, TRUE
-.loop:
-    cqo
-    idiv r8
-
-    add dl, "0"
+.put_char:
     mov [rdi+rcx], dl
 
     inc rcx
