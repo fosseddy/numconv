@@ -4,54 +4,48 @@ extern strlen
 section .data
     NULL equ 0
 
+    MAX_LEN equ 19
+
+    TRUE equ 1
+    FALSE equ 0
+
 section .text
 ; qword atoi(qword *dest, byte *str)
 atoi:
-    push r12
-
     push rdi
     mov rdi, rsi
     call strlen
-    mov r12, rax
     pop rdi
 
-    mov rax, 1
-    mov qword [rdi], 0
-    mov rcx, 0
-    mov r8, 0
-    mov r9, 0
+    cmp rax, MAX_LEN
+    jg .error
 
-    cmp byte [rsi], "+"
-    jne .no_plus_sign
+    mov r8, rax        ; str_len
+    mov rax, TRUE      ; is_success
+    mov qword [rdi], 0 ; result
+    mov rcx, 0         ; index
+    mov r9, FALSE      ; has_minus_sign
 
-    mov r8, 1
-    inc rcx
-    dec r12
-.no_plus_sign:
     cmp byte [rsi], "-"
-    jne .no_minus_sign
+    jne .loop_test
 
-    mov r8, 1
-    mov r9, 1
+    mov r9, TRUE
     inc rcx
-    dec r12
-.no_minus_sign:
     jmp .loop_test
 .loop:
     xor rdx, rdx
     mov dl, [rsi+rcx]
 
     cmp dl, "0"
-    jl .not_a_num
+    jl .error
     cmp dl, "9"
-    jg .not_a_num
+    jg .error
 
     sub dl, "0"
 
-    mov r10, r12
+    mov r10, r8
     dec r10
     sub r10, rcx
-    add r10, r8
     jmp .loop_2_test
 .loop_2:
     imul rdx, rdx, 10
@@ -66,14 +60,13 @@ atoi:
     cmp byte [rsi+rcx], NULL
     jne .loop
 
-    cmp r9, 1
+    cmp r9, TRUE
     jne .not_negative
 
     neg qword [rdi]
 .not_negative:
     jmp .exit
-.not_a_num:
-    mov rax, 0
+.error:
+    mov rax, FALSE
 .exit:
-    pop r12
     ret
