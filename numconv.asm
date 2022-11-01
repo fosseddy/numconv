@@ -13,7 +13,7 @@ section .data
     err_argc_msg db "Not enough arguments", LF, NULL
 
     usage_msg db "Usage: numconv [VALUE]", LF
-              db "Converts decimal VALUE into binary, decimal, hex, octal", LF
+              db "Converts signed int VALUE into binary, hex, octal", LF
 
 section .bss
     argc resq 1
@@ -36,6 +36,10 @@ _start:
 
     cmp rax, 1
     jne .err_num
+
+    ; convert to binary
+    ; convert to hex
+    ; convert to octal
 
     jmp .exit_success
 
