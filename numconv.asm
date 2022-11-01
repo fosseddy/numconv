@@ -6,10 +6,14 @@ extern atoi
 extern strrev
 
 section .data
-    LF equ 10
+    BINARY_LEN equ 64
+    OCTAL_LEN  equ 22
+    HEX_LEN    equ 16
+
+    LF   equ 10
     NULL equ 0
 
-    TRUE equ 1
+    TRUE  equ 1
     FALSE equ 0
 
     value dq 0
@@ -19,19 +23,19 @@ section .data
     binary_msg  db " binary: ", NULL
     octal_msg   db "  octal: ", NULL
 
-    err_num_msg db "VALUE is not a number", LF, NULL
+    err_num_msg  db "VALUE is not a number", LF, NULL
     err_argc_msg db "Not enough arguments", LF, NULL
 
     usage_msg db "Usage: numconv [VALUE]", LF
-              db "Converts signed int VALUE into binary, hex, octal", LF
+              db "Converts signed int VALUE into binary, hex, octal", LF, NULL
 
 section .bss
     argc resq 1
     argv resq 1
 
-    binary resb 66
-    octal resb 24
-    hex resb 18
+    binary resb BINARY_LEN+2
+    octal  resb OCTAL_LEN+2
+    hex    resb HEX_LEN+2
 
 section .text
 _start:
@@ -117,10 +121,10 @@ _start:
 
 ; fmt_int64(byte *dest, qword num, qword base)
 fmt_int64:
-    mov rax, rsi
-    mov rcx, 0
-    mov r8, rdx
-    mov r9, FALSE
+    mov rax, rsi  ; num
+    mov rcx, 0    ; index
+    mov r8, rdx   ; base
+    mov r9, FALSE ; is_negative
 
     cmp rax, 0
     jge .loop
