@@ -16,8 +16,6 @@ section .data
     TRUE  equ 1
     FALSE equ 0
 
-    value dq 0
-
     decimal_msg db "decimal: ", NULL
     hex_msg     db "    hex: ", NULL
     binary_msg  db " binary: ", NULL
@@ -32,6 +30,8 @@ section .data
 section .bss
     argc resq 1
     argv resq 1
+
+    value resq 1
 
     binary resb BINARY_LEN+2
     octal  resb OCTAL_LEN+2
