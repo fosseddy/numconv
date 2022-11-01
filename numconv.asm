@@ -1,5 +1,6 @@
 global _start
-extern print, STDOUT, STDERR
+
+extern print, println, STDOUT, STDERR
 extern exit
 extern atoi
 extern strrev
@@ -8,7 +9,8 @@ section .data
     LF equ 10
     NULL equ 0
 
-    new_line db LF, NULL
+    TRUE equ 1
+    FALSE equ 0
 
     value dq 0
 
@@ -22,7 +24,8 @@ section .bss
     argc resq 1
     argv resq 1
 
-    binary_str resb 65
+    binary_str resb 66
+    octal_str resb 24
 
 section .text
 _start:
@@ -48,12 +51,17 @@ _start:
 
     mov rdi, STDOUT
     mov rsi, binary_str
-    call print
-    mov rsi, new_line
-    call print
+    call println
+
+    mov rdi, octal_str
+    mov rsi, [value]
+    call int64_to_octal
+
+    mov rdi, STDOUT
+    mov rsi, octal_str
+    call println
 
     ; convert to hex
-    ; convert to octal
 
     jmp .exit_success
 
@@ -88,6 +96,13 @@ int64_to_binary:
     mov rax, rsi
     mov rcx, 0
     mov r8, 2
+    mov r9, FALSE
+
+    cmp rax, 0
+    jge .loop
+
+    neg rax
+    mov r9, TRUE
 .loop:
     cqo
     idiv r8
@@ -100,6 +115,47 @@ int64_to_binary:
     cmp rax, 0
     jne .loop
 
+    cmp r9, TRUE
+    jne .not_negative
+
+    mov byte [rdi+rcx], "-"
+    inc rcx
+.not_negative:
+    mov byte [rdi+rcx], NULL
+    call strrev
+
+    ret
+
+; void int64_to_octal(byte *dest, qword num)
+int64_to_octal:
+    mov rax, rsi
+    mov rcx, 0
+    mov r8, 8
+    mov r9, FALSE
+
+    cmp rax, 0
+    jge .loop
+
+    neg rax
+    mov r9, TRUE
+.loop:
+    cqo
+    idiv r8
+
+    add dl, "0"
+    mov [rdi+rcx], dl
+
+    inc rcx
+
+    cmp rax, 0
+    jne .loop
+
+    cmp r9, TRUE
+    jne .not_negative
+
+    mov byte [rdi+rcx], "-"
+    inc rcx
+.not_negative:
     mov byte [rdi+rcx], NULL
     call strrev
 
