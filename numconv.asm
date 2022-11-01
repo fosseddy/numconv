@@ -119,7 +119,7 @@ _start:
     mov rdi, 0
     call exit
 
-; fmt_int64(byte *dest, qword num, qword base)
+; void fmt_int64(byte *dest, qword num, qword base)
 fmt_int64:
     mov rax, rsi  ; num
     mov rcx, 0    ; index

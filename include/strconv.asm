@@ -6,7 +6,7 @@ section .data
 
     MAX_LEN equ 19
 
-    TRUE equ 1
+    TRUE  equ 1
     FALSE equ 0
 
 section .text

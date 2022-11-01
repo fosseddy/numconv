@@ -3,11 +3,16 @@ global STDIN, STDOUT, STDERR
 extern strlen
 
 section .data
-    STDIN equ 0
+    SYS_WRITE equ 1
+
+    STDIN  equ 0
     STDOUT equ 1
     STDERR equ 2
 
-    new_line db 10, 0
+    LF   equ 10
+    NULL equ 0
+
+    new_line db LF, NULL
 
 section .text
 ; void print(qword fd, byte *s)
@@ -17,9 +22,8 @@ print:
     call strlen
     pop rdi
 
-    mov r10, rax
-    mov rax, 1
-    mov rdx, r10
+    mov rdx, rax
+    mov rax, SYS_WRITE
     syscall
 
     ret

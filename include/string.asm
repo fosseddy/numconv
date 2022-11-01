@@ -19,28 +19,28 @@ strlen:
 ; void strrev(byte *s)
 strrev:
     call strlen
-    mov r8, rax
+    mov r8, rax  ; len
 
     cqo
     mov r11, 2
     div r11
     add rax, rdx
-    mov r10, rax
+    mov r10, rax ; middle = len/2 + len%2
 
-    mov rcx, 0
+    mov rcx, 0   ; index
     jmp .loop_test
 .loop:
-    mov al, [rdi+rcx]
+    mov al, [rdi+rcx] ; left = s[index]
     lea r9, [rdi+r8-1]
     sub r9, rcx
-    mov bl, [r9]
+    mov bl, [r9]      ; right = s[len-1-index]
 
-    mov [rdi+rcx], bl
-    mov [r9], al
+    mov [rdi+rcx], bl ; left = right
+    mov [r9], al      ; right = left
 
     inc rcx
 .loop_test:
-    cmp rcx, r10
+    cmp rcx, r10 ; index < middle
     jl .loop
 
     ret
