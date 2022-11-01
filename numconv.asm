@@ -42,23 +42,9 @@ _start:
     cmp rax, 1
     jne .err_num
 
-    mov rax, [value]
-    mov rcx, 0
-    mov rbx, 2
-.loop:
-    cqo
-    idiv rbx
-    mov r10, rdx
-    add r10b, "0"
-    mov [binary_str+rcx], r10b
-    inc rcx
-    cmp rax, 0
-    jne .loop
-
-    mov byte [binary_str+rcx], NULL
-
     mov rdi, binary_str
-    call strrev
+    mov rsi, [value]
+    call int64_to_binary
 
     mov rdi, STDOUT
     mov rsi, binary_str
@@ -66,7 +52,6 @@ _start:
     mov rsi, new_line
     call print
 
-    ; convert to binary
     ; convert to hex
     ; convert to octal
 
@@ -88,12 +73,34 @@ _start:
     mov rdi, STDERR
     mov rsi, usage_msg
     call print
-    jmp .exit_failure
+    jmp .exit_fail
 
-.exit_failure:
+.exit_fail:
     mov rdi, 1
     call exit
 
 .exit_success:
     mov rdi, 0
     call exit
+
+; void int64_to_binary(byte *dest, qword num)
+int64_to_binary:
+    mov rax, rsi
+    mov rcx, 0
+    mov r8, 2
+.loop:
+    cqo
+    idiv r8
+
+    add dl, "0"
+    mov [rdi+rcx], dl
+
+    inc rcx
+
+    cmp rax, 0
+    jne .loop
+
+    mov byte [rdi+rcx], NULL
+    call strrev
+
+    ret
